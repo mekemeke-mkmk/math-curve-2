@@ -11,6 +11,7 @@ Define a function, tune its variables on a live graph, and place it on any sketc
 - **Product page:** https://mekemeke-mkmk.github.io/math-curve-2/
 - **User guide:** https://mekemeke-mkmk.github.io/math-curve-2/guide.html
 - **Support:** mekemeke.lab@gmail.com
+- **Privacy policy:** https://mekemeke-mkmk.github.io/math-curve-2/privacy.html
 
 ### Quick start
 1. Install Math Curve 2 and start Autodesk Fusion.
@@ -31,6 +32,7 @@ Math Curve 2 は、`y = f(x)` や媒介変数の曲線を Fusion のスケッチ
 - **製品ページ:** https://mekemeke-mkmk.github.io/math-curve-2/
 - **ユーザーガイド:** https://mekemeke-mkmk.github.io/math-curve-2/guide.html
 - **サポート:** mekemeke.lab@gmail.com
+- **プライバシーポリシー:** https://mekemeke-mkmk.github.io/math-curve-2/privacy.html
 
 ### かんたんな使い方
 1. Math Curve 2 をインストールし、Autodesk Fusion を起動します。
