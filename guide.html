@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Math Curve 2 User Guide</title>
+<meta name="description" content="How to use Math Curve 2 for Autodesk Fusion: functions, variables, the graph, placing curves on a sketch line, warnings, the function library, and the license.">
+<link rel="icon" href="images/icon_120.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: a reference manual. Sticky contents on the left, one reading column on the right. */
+  :root {
+    --paper: #f6f8fb; --panel: #ffffff; --ink: #13233a; --muted: #586a80; --rule: #d9e2ec;
+    --blue: #2f6fdf; --orange: #d9480f; --chip: #eaf1fc;
+    --display: "Space Grotesk", "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --body: "IBM Plex Sans", "IBM Plex Sans JP", "Segoe UI", "Hiragino Sans", "Yu Gothic UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper: #0e1520; --panel: #141d29; --ink: #e2e9f2; --muted: #95a6b9; --rule: #243142;
+      --blue: #6c9cff; --orange: #ff8a4c; --chip: #1b2a40; color-scheme: dark; }
+  }
+  * { box-sizing: border-box; }
+  html[lang="ja"] h1, html[lang="ja"] h2, html[lang="ja"] h3 { word-break: auto-phrase; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.7 var(--body); }
+  html[lang="ja"] body { line-height: 1.85; }
+  img { max-width: 100%; height: auto; }
+  a { color: var(--blue); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  h1, h2, h3 { font-family: var(--display); line-height: 1.2; text-wrap: balance; }
+  h1 { font-size: clamp(30px, 4vw, 42px); margin: 0 0 8px; }
+  h2 { font-size: 24px; margin: 48px 0 12px; padding-top: 12px; border-top: 1px solid var(--rule); scroll-margin-top: 16px; }
+  h3 { font-size: 18px; margin: 24px 0 6px; }
+  code, kbd { font-family: var(--mono); font-size: 0.9em; background: var(--chip); border-radius: 4px; padding: 0 5px; }
+  article p code, article li code { overflow-wrap: anywhere; }
+  .shell { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-block: 14px; }
+  .brand { display: flex; align-items: center; gap: 10px; font: 700 17px var(--display); color: var(--ink); text-decoration: none; }
+  .brand img { width: 28px; height: 28px; }
+  .lang { display: flex; border: 1px solid var(--rule); border-radius: 999px; overflow: hidden; }
+  .lang button { border: 0; background: transparent; color: var(--muted); font: 500 13px var(--body); padding: 5px 12px; cursor: pointer; }
+  .lang button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+  .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 40px; padding-block: 16px 64px; }
+  nav.toc { position: sticky; top: 16px; align-self: start; font-size: 14px; }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  nav.toc ol[hidden] { display: none; }
+  nav.toc a { color: var(--muted); text-decoration: none; }
+  nav.toc a:hover { color: var(--blue); }
+  article { max-width: 72ch; min-width: 0; }
+  article[hidden] { display: none; }
+  .lead { color: var(--muted); font-size: 18px; margin: 0 0 8px; }
+  figure { margin: 18px 0; }
+  figure img { border: 1px solid var(--rule); border-radius: 10px; }
+  figcaption { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  ol.steps, ul { padding-left: 1.3em; }
+  ol.steps li, ul li { margin-bottom: 6px; }
+  .note { border-left: 3px solid var(--orange); background: var(--panel); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+  .table-scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { text-align: left; padding: 7px 8px; border-top: 1px solid var(--rule); vertical-align: top; }
+  th { font-weight: 600; }
+  td:first-child { white-space: nowrap; }
+  footer { border-top: 1px solid var(--rule); padding-block: 24px; color: var(--muted); font-size: 13px; }
+  @media (max-width: 820px) {
+    .layout { grid-template-columns: minmax(0, 1fr); }
+    nav.toc { position: static; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <a class="brand" href="index.html"><img src="images/icon_120.png" alt="">Math Curve 2</a>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" id="langEn" aria-pressed="true">EN</button>
+      <button type="button" id="langJa" aria-pressed="false">日本語</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="toc" aria-label="Contents">
+      <ol id="tocEn">
+        <li><a href="#en-start">Getting started</a></li>
+        <li><a href="#en-window">The window</a></li>
+        <li><a href="#en-functions">Functions</a></li>
+        <li><a href="#en-expressions">Writing expressions</a></li>
+        <li><a href="#en-variables">Variables</a></li>
+        <li><a href="#en-graph">The graph</a></li>
+        <li><a href="#en-place">Placing in the sketch</a></li>
+        <li><a href="#en-status">Status and warnings</a></li>
+        <li><a href="#en-create">Creating curves</a></li>
+        <li><a href="#en-library">Function library</a></li>
+        <li><a href="#en-license">License and privacy</a></li>
+        <li><a href="#en-faq">Troubleshooting</a></li>
+      </ol>
+      <ol id="tocJa" hidden>
+        <li><a href="#ja-start">はじめに</a></li>
+        <li><a href="#ja-window">ウィンドウの構成</a></li>
+        <li><a href="#ja-functions">関数</a></li>
+        <li><a href="#ja-expressions">式の書き方</a></li>
+        <li><a href="#ja-variables">変数</a></li>
+        <li><a href="#ja-graph">グラフ</a></li>
+        <li><a href="#ja-place">スケッチへの配置</a></li>
+        <li><a href="#ja-status">Status と警告</a></li>
+        <li><a href="#ja-create">曲線の作成</a></li>
+        <li><a href="#ja-library">関数ライブラリ</a></li>
+        <li><a href="#ja-license">ライセンスとプライバシー</a></li>
+        <li><a href="#ja-faq">困ったときは</a></li>
+      </ol>
+    </nav>
+
+    <article id="articleEn" lang="en">
+      <h1>Math Curve 2 User Guide</h1>
+      <p class="lead">Version 26.3.0 for Autodesk Fusion on Windows.</p>
+
+      <h2 id="en-start">Getting started</h2>
+      <ol class="steps">
+        <li>Install Math Curve 2 from the Autodesk App Store and start (or restart) Fusion.</li>
+        <li>Open or create a design and enter Sketch mode.</li>
+        <li>Choose <b>Create &gt; Math Curve Sketch</b>. The Math Curve window opens. It stays open while you work in Fusion.</li>
+      </ol>
+
+      <h2 id="en-window">The window</h2>
+      <figure><img src="images/01_overview.png" alt="The Math Curve window with the function list, editor, graph, and Place in sketch bar." width="2160" height="1215" loading="lazy">
+        <figcaption>Left: function list and editor. Right: graph, Place in sketch, and Status.</figcaption></figure>
+      <ul>
+        <li><b>Function list</b>: <b>Draw</b> shows a function on the graph and creates it in the sketch. <b>From end</b>, <b>Flip X</b>, and <b>Flip Y</b> orient it on the baseline.</li>
+        <li><b>Editor</b>: name, type, expressions, step or t range, start / end connection, and variables of the selected function.</li>
+        <li><b>Graph</b>: the shape of the functions, calculated the same way as in the sketch.</li>
+        <li><b>Place in sketch</b> and <b>Status</b>: the baseline, unit, x range, output, and what is ready to create. The three steps at the top (Functions, Baseline, Create) turn green as you go.</li>
+      </ul>
+
+      <h2 id="en-functions">Functions</h2>
+      <p>Use <b>+ Add function...</b> to add a new function of one of these types, or a preset:</p>
+      <div class="table-scroll"><table>
+        <tr><th>Type</th><th>Fields</th><th>Notes</th></tr>
+        <tr><td>y = f(x)</td><td><code>y =</code>, Sketch step</td><td>Drawn over the x range set under Place in sketch. The step is the distance between points in the sketch.</td></tr>
+        <tr><td>x(t), y(t)</td><td><code>x(t) =</code>, <code>y(t) =</code>, t start, t end, t step</td><td><b>Start / End</b>: leave open, close smoothly, or close with a straight line.</td></tr>
+        <tr><td>x(t), y(t), z(t) (beta)</td><td>also <code>z(t) =</code></td><td>z is drawn along the sketch normal. The graph shows the x-y view.</td></tr>
+      </table></div>
+      <p>New functions and presets start with <b>Draw</b> checked. The selected function is shown dashed on the graph even when Draw is off, so you can tune it before choosing it for the sketch. <b>Delete</b> asks for a second click.</p>
+
+      <h2 id="en-expressions">Writing expressions</h2>
+      <div class="table-scroll"><table>
+        <tr><th>Write</th><th>Meaning</th></tr>
+        <tr><td><code>x^2</code> or <code>x**2</code></td><td>Power</td></tr>
+        <tr><td><code>a*sin(2*pi*x/L)</code></td><td>Variables such as <code>a</code> and <code>L</code></td></tr>
+        <tr><td><code>width*x</code></td><td>A Fusion user parameter, by name (length parameters use the selected unit)</td></tr>
+        <tr><td><code>x if x &lt; 5 else 10 - x</code></td><td>Piecewise definition</td></tr>
+        <tr><td><code>pi</code>, <code>e</code>, <code>tau</code></td><td>Constants</td></tr>
+      </table></div>
+      <p>Functions: <code>sin cos tan asin acos atan atan2 sinh cosh tanh asinh acosh atanh exp log log10 log2 sqrt cbrt abs sign floor ceil round min max hypot pow radians degrees</code>. Angles are in radians.</p>
+      <figure><img src="images/02_expression_check.png" alt="An expression error with the button that adds the missing variable." width="2160" height="1215" loading="lazy">
+        <figcaption>Errors are shown under the editor. An unknown name gets a one-click <b>+ Add variable</b> button.</figcaption></figure>
+
+      <h2 id="en-variables">Variables</h2>
+      <ul>
+        <li>Add a variable with the name and value boxes and <b>+ Variable</b>, or with <b>+ Add variable</b> under an error. Remove it with <b>×</b>.</li>
+        <li>Drag the slider to see the graph change; the value is saved when you release it. Type a value in the box for an exact number.</li>
+        <li>Set the slider range with <b>min</b> and <b>max</b>. Typing a value outside the range widens it.</li>
+        <li>Names use letters, digits, and <code>_</code>. Function names, <code>x</code>, <code>t</code>, and constants are reserved.</li>
+      </ul>
+      <figure><img src="images/03_variables.png" alt="Variable sliders with min and max boxes." width="2160" height="1215" loading="lazy"></figure>
+
+      <h2 id="en-graph">The graph</h2>
+      <ul>
+        <li>Drag to pan, scroll or use <b>+</b> / <b>−</b> to zoom. <b>Fit</b> frames the functions; <b>Origin</b> centers (0, 0).</li>
+        <li>The shaded band is the x range used for y = f(x) in the sketch.</li>
+        <li>The graph has no unit. From end, Flip X, and Flip Y apply only to the placement in the sketch.</li>
+      </ul>
+
+      <h2 id="en-place">Placing in the sketch</h2>
+      <ol class="steps">
+        <li>Click <b>Select line</b> and pick a sketch line in Fusion. Its start point is the origin and its direction is +x. Or click <b>Sketch origin</b> while editing a sketch to use its origin and X axis.</li>
+        <li>Choose the <b>Unit</b> (1 = 1 mm, cm, m, in, or ft) and, for y = f(x), <b>x from</b> and <b>x to</b>.</li>
+        <li>Choose the <b>Output</b>: <b>Light curve</b> (recommended: one smooth spline through every point, no extra sketch points) or <b>Editable fit-point spline</b> (can be edited point by point, but makes later work in the sketch slower).</li>
+        <li>With <b>Preview in Fusion</b> checked, the curves, the baseline, and red (+x) / green (+y) arrows appear in the viewport. The preview is display-only and does not change the sketch.</li>
+      </ol>
+      <p>Switching to another document clears the baseline, so curves are never created in the wrong design.</p>
+
+      <h2 id="en-status">Status and warnings</h2>
+      <figure><img src="images/04_discontinuity.png" alt="A tan(x) discontinuity warning that pauses creation." width="2160" height="1215" loading="lazy">
+        <figcaption>Warnings pause creation until you check <b>Draw anyway</b>.</figcaption></figure>
+      <ul>
+        <li><b>[OK]</b>: ready, with the number of points.</li>
+        <li><b>[WARNING]</b>: a discontinuity (for example tan(x)), points that are undefined or too large, or many points. Review it, then check <b>Draw anyway</b>. If the warnings change, Draw anyway is cleared again.</li>
+        <li><b>[ERROR]</b>: the expression cannot be used, the step is too small (more than 20,000 points), or the calculation takes longer than 3 seconds. Fix it in the editor.</li>
+        <li>The reasons why <b>Create Curves</b> is disabled are listed under the button. Click a reason about a function to select it.</li>
+      </ul>
+
+      <h2 id="en-create">Creating curves</h2>
+      <p>Click <b>Create Curves</b>. The functions with Draw checked are added to the sketch of the baseline as one step, so one <b>Undo</b> removes them all. If any curve cannot be built, nothing is created and the reason is shown; the baseline stays selected so you can fix it and try again. After creating, select another line to place the curves again.</p>
+
+      <h2 id="en-library">Function library</h2>
+      <ul>
+        <li>Functions are saved automatically to <code>%APPDATA%\MathCurve2\function_library.json</code> (macOS: <code>~/Library/Application Support/MathCurve2/</code>).</li>
+        <li><b>More &gt; Export library...</b> and <b>Import library...</b> save and load a JSON file. Imported functions are added; duplicate names get a number.</li>
+        <li>An unreadable library is kept as a timestamped <code>.broken</code> copy. If only some functions cannot be read, the original is backed up before it is saved again.</li>
+        <li><b>More &gt; Refresh</b> re-reads Fusion user parameters after you change them.</li>
+      </ul>
+
+      <h2 id="en-license">License and privacy</h2>
+      <ul>
+        <li>The 30-day trial has every feature of the paid version.</li>
+        <li>The license is verified with Autodesk Marketplace in the background when the window opens, and again when you create curves if no recent result is available. Fusion is not blocked while it waits. An internet connection is needed.</li>
+        <li>A successful check is kept in memory for up to one hour and is never written to disk.</li>
+        <li>Only your Autodesk user ID and the app ID are sent, directly to Autodesk. Geometry is processed on your computer, and nothing is sent to the publisher.</li>
+      </ul>
+
+      <h2 id="en-faq">Troubleshooting</h2>
+      <h3>Create Curves is disabled</h3>
+      <p>Read the reasons under the button: check Draw for a function, fix errors, select a baseline, set a valid x range, or check Draw anyway after reviewing warnings.</p>
+      <h3>The curve has gaps or is split</h3>
+      <p>The function is undefined there (for example <code>sqrt</code> of a negative number) or has a discontinuity. This is shown as a warning, and the curve is split instead of being joined across the gap.</p>
+      <h3>The curve is too small or too large</h3>
+      <p>Check the <b>Unit</b>. With 1 = 1 mm, x = 10 is 10 mm in the sketch.</p>
+      <h3>A license message appears</h3>
+      <p>Sign in to Fusion with the Autodesk account that has the trial or license, check the internet connection, and click Create Curves again. The message links to the App Store page.</p>
+      <h3>Contact</h3>
+      <p>Email <b>mekemeke.lab@gmail.com</b> with the function and the message shown in Status.</p>
+    </article>
+
+    <article id="articleJa" lang="ja" hidden>
+      <h1>Math Curve 2 ユーザーガイド</h1>
+      <p class="lead">バージョン 26.3.0（Windows 版 Autodesk Fusion 用）</p>
+
+      <h2 id="ja-start">はじめに</h2>
+      <ol class="steps">
+        <li>Autodesk App Store から Math Curve 2 をインストールし、Fusion を起動（または再起動）します。</li>
+        <li>デザインを開くか新しく作成し、スケッチモードに入ります。</li>
+        <li><b>作成 &gt; Math Curve Sketch</b> を選びます。Math Curve ウィンドウが開きます。Fusion で作業している間も開いたままにできます。</li>
+      </ol>
+
+      <h2 id="ja-window">ウィンドウの構成</h2>
+      <figure><img src="images/01_overview.png" alt="関数一覧、編集欄、グラフ、Place in sketch がある Math Curve ウィンドウ。" width="2160" height="1215" loading="lazy">
+        <figcaption>左: 関数一覧と編集欄。右: グラフ、Place in sketch、Status。</figcaption></figure>
+      <ul>
+        <li><b>関数一覧</b>: <b>Draw</b> にチェックした関数がグラフに表示され、スケッチに作成されます。<b>From end</b>、<b>Flip X</b>、<b>Flip Y</b> で基準線に対する向きを変えます。</li>
+        <li><b>編集欄</b>: 選んだ関数の名前、種類、式、刻み幅または t の範囲、始点と終点のつなぎ方、変数を編集します。</li>
+        <li><b>グラフ</b>: 関数の形を、スケッチと同じ計算で表示します。</li>
+        <li><b>Place in sketch</b> と <b>Status</b>: 基準線、単位、x の範囲、出力方式と、作成の準備ができているかを表示します。上の3つの手順（Functions、Baseline、Create）は、済むと緑になります。</li>
+      </ul>
+
+      <h2 id="ja-functions">関数</h2>
+      <p><b>+ Add function...</b> から、次の種類の関数か、プリセットを追加します。</p>
+      <div class="table-scroll"><table>
+        <tr><th>種類</th><th>入力欄</th><th>補足</th></tr>
+        <tr><td>y = f(x)</td><td><code>y =</code>、Sketch step</td><td>Place in sketch で決めた x の範囲で描きます。Sketch step は、スケッチに作るときの点の間隔です。</td></tr>
+        <tr><td>x(t), y(t)</td><td><code>x(t) =</code>、<code>y(t) =</code>、t start、t end、t step</td><td><b>Start / End</b> で、開いたまま・滑らかに閉じる・直線で閉じる、を選べます。</td></tr>
+        <tr><td>x(t), y(t), z(t)（β版）</td><td><code>z(t) =</code> も入力</td><td>z はスケッチ面の法線方向に描きます。グラフは x-y の形を表示します。</td></tr>
+      </table></div>
+      <p>新しい関数とプリセットは、最初から <b>Draw</b> にチェックが入っています。選んでいる関数は、Draw が off でもグラフに点線で表示されるので、スケッチに使う前に形を調整できます。<b>Delete</b> は2回クリックで削除します。</p>
+
+      <h2 id="ja-expressions">式の書き方</h2>
+      <div class="table-scroll"><table>
+        <tr><th>書き方</th><th>意味</th></tr>
+        <tr><td><code>x^2</code> または <code>x**2</code></td><td>べき乗</td></tr>
+        <tr><td><code>a*sin(2*pi*x/L)</code></td><td><code>a</code> や <code>L</code> などの変数</td></tr>
+        <tr><td><code>width*x</code></td><td>Fusion のユーザーパラメーター（名前で指定。長さのパラメーターは選んだ単位に換算）</td></tr>
+        <tr><td><code>x if x &lt; 5 else 10 - x</code></td><td>場合分け</td></tr>
+        <tr><td><code>pi</code>、<code>e</code>、<code>tau</code></td><td>定数</td></tr>
+      </table></div>
+      <p>使える関数: <code>sin cos tan asin acos atan atan2 sinh cosh tanh asinh acosh atanh exp log log10 log2 sqrt cbrt abs sign floor ceil round min max hypot pow radians degrees</code>。角度はラジアンです。</p>
+      <figure><img src="images/02_expression_check.png" alt="式のエラーと、足りない変数を追加するボタン。" width="2160" height="1215" loading="lazy">
+        <figcaption>エラーは編集欄の下に表示されます。未定義の名前には <b>+ Add variable</b> ボタンが出ます。</figcaption></figure>
+
+      <h2 id="ja-variables">変数</h2>
+      <ul>
+        <li>名前と値を入力して <b>+ Variable</b> を押すか、エラーの下の <b>+ Add variable</b> で追加します。<b>×</b> で削除します。</li>
+        <li>スライダーを動かすとグラフが変わり、離したときに値が保存されます。正確な値は数値の欄に入力します。</li>
+        <li><b>min</b> と <b>max</b> でスライダーの範囲を決めます。範囲の外の値を入力すると、範囲が広がります。</li>
+        <li>名前には英字、数字、<code>_</code> を使います。関数名、<code>x</code>、<code>t</code>、定数の名前は使えません。</li>
+      </ul>
+      <figure><img src="images/03_variables.png" alt="min と max の欄が付いた変数スライダー。" width="2160" height="1215" loading="lazy"></figure>
+
+      <h2 id="ja-graph">グラフ</h2>
+      <ul>
+        <li>ドラッグで移動、ホイールまたは <b>+</b> / <b>−</b> で拡大縮小します。<b>Fit</b> で関数全体を表示し、<b>Origin</b> で原点を中心にします。</li>
+        <li>色の付いた帯は、y = f(x) をスケッチに作るときの x の範囲です。</li>
+        <li>グラフに単位はありません。From end、Flip X、Flip Y は、スケッチへの配置にだけ反映されます。</li>
+      </ul>
+
+      <h2 id="ja-place">スケッチへの配置</h2>
+      <ol class="steps">
+        <li><b>Select line</b> を押して、Fusion でスケッチ線を選びます。線の始点が原点、向きが +x になります。スケッチを編集中なら、<b>Sketch origin</b> でスケッチの原点と X 軸も使えます。</li>
+        <li><b>Unit</b>（1 = 1 mm、cm、m、in、ft）と、y = f(x) の場合は <b>x from</b> と <b>x to</b> を選びます。</li>
+        <li><b>Output</b> を選びます。<b>Light curve</b>（おすすめ: すべての点を通る1本の滑らかなスプライン。余分なスケッチ点を作りません）または <b>Editable fit-point spline</b>（点ごとに編集できますが、スケッチでの後の作業が重くなります）。</li>
+        <li><b>Preview in Fusion</b> にチェックを入れると、曲線、基準線、赤（+x）と緑（+y）の矢印がビューポートに表示されます。プレビューは表示だけで、スケッチは変更しません。</li>
+      </ol>
+      <p>別の文書に切り替えると基準線は解除されるので、別のデザインに曲線が作られることはありません。</p>
+
+      <h2 id="ja-status">Status と警告</h2>
+      <figure><img src="images/04_discontinuity.png" alt="tan(x) の不連続点の警告で、作成が止まっている様子。" width="2160" height="1215" loading="lazy">
+        <figcaption>警告があると、<b>Draw anyway</b> にチェックを入れるまで作成を止めます。</figcaption></figure>
+      <ul>
+        <li><b>[OK]</b>: 作成できます。点の数も表示します。</li>
+        <li><b>[WARNING]</b>: 不連続点（tan(x) など）、定義できない点や大きすぎる値、点の数が多いとき。内容を確認してから <b>Draw anyway</b> にチェックを入れます。警告の内容が変わると、Draw anyway は外れます。</li>
+        <li><b>[ERROR]</b>: 式が使えない、刻みが細かすぎる（20,000点を超える）、計算に3秒以上かかる、など。編集欄で直してください。</li>
+        <li><b>Create Curves</b> が押せない理由は、ボタンの下に表示されます。関数についての理由をクリックすると、その関数を選べます。</li>
+      </ul>
+
+      <h2 id="ja-create">曲線の作成</h2>
+      <p><b>Create Curves</b> を押すと、Draw にチェックした関数が、基準線のスケッチに1回の操作として作成されます。<b>元に戻す</b>1回ですべて取り消せます。1本でも作れない曲線があれば何も作成せず、理由を表示します。基準線は選んだまま残るので、直してからもう一度押せます。作成したあとは、別の線を選べば、同じ曲線をまた配置できます。</p>
+
+      <h2 id="ja-library">関数ライブラリ</h2>
+      <ul>
+        <li>関数は <code>%APPDATA%\MathCurve2\function_library.json</code> に自動で保存されます（macOS: <code>~/Library/Application Support/MathCurve2/</code>）。</li>
+        <li><b>More &gt; Export library...</b> と <b>Import library...</b> で、JSON ファイルに書き出し・読み込みができます。読み込んだ関数は追加され、同じ名前には番号が付きます。</li>
+        <li>読めないライブラリは、日時付きの <code>.broken</code> ファイルとして残します。一部の関数だけ読めない場合は、元のファイルをバックアップしてから保存します。</li>
+        <li>Fusion のユーザーパラメーターを変えたら、<b>More &gt; Refresh</b> で読み直します。</li>
+      </ul>
+
+      <h2 id="ja-license">ライセンスとプライバシー</h2>
+      <ul>
+        <li>30日間の体験版は、製品版と同じすべての機能を使えます。</li>
+        <li>ウィンドウを開いたときに、Autodesk Marketplace のライセンスを裏で確認します。最近の確認結果がない場合は、曲線の作成時にも確認します。確認の間も Fusion は止まりません。インターネット接続が必要です。</li>
+        <li>確認できた結果はメモリ上に最大1時間だけ保持し、ディスクには保存しません。</li>
+        <li>送信するのは Autodesk のユーザー ID とアプリ ID だけで、Autodesk に直接送ります。形状の計算はお使いのコンピューターで行い、発行者には何も送信しません。</li>
+      </ul>
+
+      <h2 id="ja-faq">困ったときは</h2>
+      <h3>Create Curves が押せない</h3>
+      <p>ボタンの下の理由を確認してください。関数の Draw にチェックする、エラーを直す、基準線を選ぶ、正しい x の範囲を入れる、警告を確認して Draw anyway にチェックする、のいずれかで解決します。</p>
+      <h3>曲線が途切れる、分かれる</h3>
+      <p>その場所で関数が定義されていない（負の数の <code>sqrt</code> など）か、不連続点があります。警告として表示され、途切れた部分をつながずに分けて作成します。</p>
+      <h3>曲線が小さすぎる、大きすぎる</h3>
+      <p><b>Unit</b> を確認してください。1 = 1 mm のとき、x = 10 はスケッチ上で 10 mm です。</p>
+      <h3>ライセンスのメッセージが出る</h3>
+      <p>体験版またはライセンスのある Autodesk アカウントで Fusion にサインインし、インターネット接続を確認してから、もう一度 Create Curves を押してください。メッセージから App Store のページを開けます。</p>
+      <h3>お問い合わせ</h3>
+      <p><b>mekemeke.lab@gmail.com</b> まで、関数と Status に表示されたメッセージを添えてご連絡ください。</p>
+    </article>
+  </div>
+</div>
+<footer><div class="shell">© 2026 MEKE MEKE. All rights reserved. Math Curve 2 is an independent add-in. Autodesk and Fusion are registered trademarks or trademarks of Autodesk, Inc.</div></footer>
+<script>
+(function () {
+  function setLang(lang) {
+    var ja = lang === "ja";
+    document.documentElement.lang = ja ? "ja" : "en";
+    document.getElementById("articleEn").hidden = ja;
+    document.getElementById("articleJa").hidden = !ja;
+    document.getElementById("tocEn").hidden = ja;
+    document.getElementById("tocJa").hidden = !ja;
+    document.getElementById("langEn").setAttribute("aria-pressed", ja ? "false" : "true");
+    document.getElementById("langJa").setAttribute("aria-pressed", ja ? "true" : "false");
+    try { localStorage.setItem("mathCurveLang", lang); } catch (e) { /* language is remembered only when storage works */ }
+  }
+  document.getElementById("langEn").addEventListener("click", function () { setLang("en"); });
+  document.getElementById("langJa").addEventListener("click", function () { setLang("ja"); });
+  var saved = "en";
+  try { saved = localStorage.getItem("mathCurveLang") || (navigator.language || "").slice(0, 2); } catch (e) { saved = "en"; }
+  if (location.hash.indexOf("#ja-") === 0) saved = "ja";
+  setLang(saved === "ja" ? "ja" : "en");
+})();
+</script>
+</body>
+</html>

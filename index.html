@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Math Curve 2 for Autodesk Fusion</title>
+<meta name="description" content="Math Curve 2 is an Autodesk Fusion add-in that draws y = f(x) and parametric curves into your sketch: define functions, tune them on a live graph, and place them on any sketch line.">
+<link rel="icon" href="images/icon_120.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: an engineering notebook. Graph-paper hero with a live plot, then a reading column
+     with wide figure bands for the window, the preset atlas, and the expression reference. */
+  :root {
+    --paper: #f6f8fb;
+    --panel: #ffffff;
+    --ink: #13233a;
+    --muted: #586a80;
+    --rule: #d9e2ec;
+    --grid: #e6edf4;
+    --grid-major: #cfdbe7;
+    --blue: #2f6fdf;
+    --orange: #d9480f;
+    --green: #2b8a3e;
+    --violet: #9c36b5;
+    --teal: #0c8599;
+    --red: #c92a2a;
+    --chip: #eaf1fc;
+    --display: "Space Grotesk", "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --body: "IBM Plex Sans", "IBM Plex Sans JP", "Segoe UI", "Hiragino Sans", "Yu Gothic UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0e1520; --panel: #141d29; --ink: #e2e9f2; --muted: #95a6b9; --rule: #243142;
+      --grid: #172230; --grid-major: #213044; --blue: #6c9cff; --orange: #ff8a4c; --green: #51cf66;
+      --violet: #d58bf0; --teal: #3bc9db; --red: #ff6b6b; --chip: #1b2a40; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0e1520; --panel: #141d29; --ink: #e2e9f2; --muted: #95a6b9; --rule: #243142;
+    --grid: #172230; --grid-major: #213044; --blue: #6c9cff; --orange: #ff8a4c; --green: #51cf66;
+    --violet: #d58bf0; --teal: #3bc9db; --red: #ff6b6b; --chip: #1b2a40; color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html[lang="ja"] h1, html[lang="ja"] h2, html[lang="ja"] h3 { word-break: auto-phrase; }
+  body { margin: 0; }
+  img { max-width: 100%; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.65; }
+  html[lang="ja"] body { line-height: 1.8; }
+  a { color: var(--blue); }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  h1, h2, h3 { font-family: var(--display); line-height: 1.15; text-wrap: balance; margin: 0; }
+  html[lang="ja"] h1, html[lang="ja"] h2, html[lang="ja"] h3 { font-family: "Space Grotesk", "IBM Plex Sans JP", sans-serif; }
+  p { margin: 0; }
+  code, .mono { font-family: var(--mono); font-size: 0.92em; }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .band { padding-block: 72px; border-top: 1px solid var(--rule); }
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .lead { color: var(--muted); max-width: 62ch; }
+  .section-head { display: grid; gap: 10px; margin-bottom: 32px; max-width: 70ch; }
+  .section-head h2 { font-size: clamp(26px, 3.2vw, 36px); }
+
+  /* Top bar */
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 14px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 700; font-size: 17px; }
+  .brand svg { flex: none; }
+  .topnav { display: flex; align-items: center; gap: 14px; }
+  .guide-link { font-weight: 500; font-size: 14px; text-decoration: none; }
+  .lang { display: flex; border: 1px solid var(--rule); border-radius: 999px; overflow: hidden; }
+  .lang button { border: 0; background: transparent; color: var(--muted); font: 500 13px var(--body); padding: 5px 12px; cursor: pointer; }
+  .lang button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+  /* Hero: text left, live plot right */
+  .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 40px; align-items: center; padding-block: 32px 64px; }
+  .hero h1 { font-size: clamp(36px, 5.2vw, 60px); letter-spacing: -0.02em; }
+  .hero h1 span { color: var(--blue); }
+  .hero .lead { margin-top: 18px; font-size: 18px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+  .chip { font: 500 12px var(--mono); padding: 4px 10px; border-radius: 999px; background: var(--chip); color: var(--ink); }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; align-items: center; }
+  .button { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 8px; font-weight: 600; text-decoration: none; }
+  .button.primary { background: var(--blue); color: #fff; }
+  .button.secondary { border: 1px solid var(--rule); color: var(--ink); background: var(--panel); }
+
+  .plot { background: var(--panel); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; }
+  .plot canvas { display: block; width: 100%; aspect-ratio: 4 / 3; }
+  .plot-controls { display: grid; gap: 10px; padding: 14px 16px 16px; border-top: 1px solid var(--rule); }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tabs button { border: 1px solid var(--rule); background: transparent; color: var(--ink); border-radius: 6px; padding: 4px 10px; font: 500 13px var(--body); cursor: pointer; }
+  .tabs button[aria-pressed="true"] { border-color: var(--blue); background: var(--chip); }
+  .formula { font-family: var(--mono); font-size: 13.5px; color: var(--ink); overflow-x: auto; white-space: nowrap; min-width: 0; }
+  .slider-row { display: grid; grid-template-columns: auto 1fr 3.5em; gap: 10px; align-items: center; font-family: var(--mono); font-size: 13px; }
+  .slider-row input { width: 100%; accent-color: var(--blue); }
+  .slider-row output { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* The window figure */
+  .window-figure { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+  .window-figure img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--rule); box-shadow: 0 18px 40px -24px rgba(19, 35, 58, 0.45); }
+  .window-figure figcaption { font-size: 13px; color: var(--muted); margin-top: 10px; }
+  .steps { display: grid; gap: 22px; counter-reset: step; list-style: none; margin: 0; padding: 0; }
+  .steps li { display: grid; grid-template-columns: 34px 1fr; gap: 12px; }
+  .steps li::before { counter-increment: step; content: counter(step); width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--blue); color: var(--blue); font: 700 15px var(--display); display: grid; place-items: center; }
+  .steps h3 { font-size: 18px; margin-bottom: 4px; }
+  .steps p { color: var(--muted); font-size: 15px; }
+
+  /* Features */
+  .features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px 32px; }
+  .feature h3 { font-size: 17px; margin-bottom: 6px; display: flex; gap: 8px; align-items: baseline; }
+  .feature h3::before { content: ""; width: 10px; height: 10px; border-radius: 2px; background: var(--c, var(--blue)); flex: none; transform: translateY(-1px); }
+  .feature p { color: var(--muted); font-size: 15px; }
+
+  /* Preset atlas */
+  .atlas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+  .atlas figure { margin: 0; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 10px 10px 12px; }
+  .atlas canvas { width: 100%; aspect-ratio: 1; display: block; }
+  .atlas figcaption { font-size: 13.5px; font-weight: 600; margin-top: 6px; }
+  .atlas .mono { display: block; font-size: 11.5px; color: var(--muted); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Expression reference */
+  .ref { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+  .ref-card { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 18px 20px; min-width: 0; }
+  .ref-card h3 { font-size: 16px; margin-bottom: 10px; }
+  .table-scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  td { padding: 7px 8px; border-top: 1px solid var(--rule); vertical-align: top; }
+  td:first-child { font-family: var(--mono); white-space: nowrap; padding-left: 0; }
+  td:last-child { color: var(--muted); }
+  .fn-list { font-family: var(--mono); font-size: 13.5px; line-height: 2; display: flex; flex-wrap: wrap; gap: 4px 6px; }
+  .fn-list span { background: var(--chip); border-radius: 4px; padding: 0 6px; }
+
+  /* What's new + license */
+  .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; }
+  .changelog { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .changelog li { padding-left: 18px; position: relative; color: var(--ink); }
+  .changelog li::before { content: ""; position: absolute; left: 0; top: 0.72em; width: 8px; height: 2px; background: var(--orange); }
+  .facts { display: grid; gap: 14px; }
+  .facts div { display: grid; gap: 2px; }
+  .facts dt { font-weight: 600; }
+  .facts dd { margin: 0; color: var(--muted); font-size: 15px; }
+
+  .support { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 18px; }
+  .email { font-family: var(--mono); font-size: 15px; padding: 8px 12px; border: 1px solid var(--rule); border-radius: 6px; background: var(--panel); user-select: all; }
+  .copy { border: 1px solid var(--rule); background: transparent; color: var(--ink); padding: 8px 12px; border-radius: 6px; font: 500 14px var(--body); cursor: pointer; }
+  footer { border-top: 1px solid var(--rule); padding-block: 28px; color: var(--muted); font-size: 13px; }
+
+  @media (max-width: 900px) {
+    .hero, .window-figure, .two { grid-template-columns: minmax(0, 1fr); }
+    .features { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .atlas { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .ref { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .features { grid-template-columns: minmax(0, 1fr); }
+    .atlas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .band { padding-block: 52px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand">
+      <img src="images/icon_120.png" alt="" width="28" height="28">
+      Math Curve 2
+    </div>
+    <div class="topnav">
+    <a class="guide-link" href="guide.html" data-i18n="navGuide">User guide</a>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" id="langEn" aria-pressed="true">EN</button>
+      <button type="button" id="langJa" aria-pressed="false">日本語</button>
+    </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <p class="eyebrow" data-i18n="eyebrow">Add-in for Autodesk Fusion · version 26.3.0</p>
+      <h1 data-i18n-html="title">Draw any function <span>straight into your sketch.</span></h1>
+      <p class="lead" data-i18n="lead">Type y = f(x) or a parametric curve, tune its variables on a live graph, and place it on any sketch line. Involutes for gears, cycloids, spirals, damped waves: exact to the formula, created in one step.</p>
+      <div class="meta">
+        <span class="chip" data-i18n="chip1">30-day free trial</span>
+        <span class="chip">y = f(x) · x(t), y(t) · z(t)</span>
+        <span class="chip">mm · cm · m · in · ft</span>
+      </div>
+      <div class="cta">
+        <a class="button primary" href="https://apps.autodesk.com/FUSION/en/Detail/Index?id=1343581627431012464" target="_blank" rel="noopener" data-i18n="ctaStore">Get it on the Autodesk App Store</a>
+        <a class="button secondary" href="guide.html" data-i18n="ctaGuide">Read the user guide</a>
+      </div>
+    </div>
+
+    <div class="plot">
+      <canvas id="heroCanvas" width="880" height="660" aria-label="Live plot of the selected curve"></canvas>
+      <div class="plot-controls">
+        <div class="tabs" role="group" aria-label="Example curve" id="heroTabs"></div>
+        <div class="formula" id="heroFormula"></div>
+        <label class="slider-row" for="heroSlider"><span id="heroVar">k</span><input type="range" id="heroSlider"><output id="heroValue" for="heroSlider"></output></label>
+      </div>
+    </div>
+  </section>
+</div>
+
+<section class="band" id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow" data-i18n="howEyebrow">One window</p>
+      <h2 data-i18n="howTitle">Define, tune, place. Everything happens in the Math Curve window.</h2>
+    </div>
+    <div class="window-figure">
+      <figure style="margin:0">
+        <img src="images/01_overview.png" alt="The Math Curve window: function list with Draw, From end, Flip X and Flip Y; the editor with variable sliders; the graph; and the Place in sketch bar with Create Curves." width="2160" height="1215" loading="lazy">
+        <figcaption data-i18n="shotCaption">The Math Curve window with four functions placed on a 50 mm sketch line.</figcaption>
+      </figure>
+      <ol class="steps">
+        <li><div><h3 data-i18n="s1t">Define functions</h3><p data-i18n="s1p">Add y = f(x), x(t), y(t), or a 3D curve, or start from a preset. Errors are explained in plain words, and an unknown name becomes a variable with one click.</p></div></li>
+        <li><div><h3 data-i18n="s2t">Tune on the graph</h3><p data-i18n="s2p">Drag variable sliders with your own min and max and watch the graph update. Discontinuities such as tan(x) are split instead of joined.</p></div></li>
+        <li><div><h3 data-i18n="s3t">Place and create</h3><p data-i18n="s3p">Pick a sketch line or the sketch origin, preview the curves on it in the viewport, then click Create Curves. One undo removes them all.</p></div></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow" data-i18n="featEyebrow">Features</p>
+      <h2 data-i18n="featTitle">Built for exact geometry, and fast in large sketches.</h2>
+    </div>
+    <div class="features">
+      <div class="feature" style="--c: var(--blue)"><h3 data-i18n="f1t">Light curves</h3><p data-i18n="f1p">Each curve is one smooth spline through every sample point, with no extra sketch points, so later edits stay fast.</p></div>
+      <div class="feature" style="--c: var(--orange)"><h3 data-i18n="f2t">Preview without side effects</h3><p data-i18n="f2p">The preview on the baseline is display-only: it never changes the sketch, the timeline, or your profiles.</p></div>
+      <div class="feature" style="--c: var(--green)"><h3 data-i18n="f3t">Real units</h3><p data-i18n="f3p">Work in mm, cm, m, in, or ft. Fusion user parameters can be used in any expression by name.</p></div>
+      <div class="feature" style="--c: var(--violet)"><h3 data-i18n="f4t">Safe creation</h3><p data-i18n="f4p">Heavy calculations stop before they slow Fusion down. If any curve cannot be built, nothing is created and the reason is shown.</p></div>
+      <div class="feature" style="--c: var(--teal)"><h3 data-i18n="f5t">Orientation controls</h3><p data-i18n="f5p">From end, Flip X, and Flip Y per function, with red +x and green +y arrows on the baseline.</p></div>
+      <div class="feature" style="--c: var(--red)"><h3 data-i18n="f6t">Your library, saved</h3><p data-i18n="f6p">Functions are saved automatically on your computer, and can be exported and imported as a JSON file.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow" data-i18n="atlasEyebrow">Preset gallery</p>
+      <h2 data-i18n="atlasTitle">Start from a classic curve.</h2>
+      <p class="lead" data-i18n="atlasLead">21 presets ship with the add-in. These are drawn live from the same formulas.</p>
+    </div>
+    <div class="atlas" id="atlas"></div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow" data-i18n="refEyebrow">Expression reference</p>
+      <h2 data-i18n="refTitle">Write formulas the way you would on paper.</h2>
+    </div>
+    <div class="ref">
+      <div class="ref-card">
+        <h3 data-i18n="refSyntax">Syntax</h3>
+        <div class="table-scroll"><table>
+          <tr><td>x^2, x**2</td><td data-i18n="r1">Powers</td></tr>
+          <tr><td>a*sin(2*pi*x/L)</td><td data-i18n="r2">Variables such as a and L get sliders</td></tr>
+          <tr><td>width*x</td><td data-i18n="r3">Fusion user parameters by name</td></tr>
+          <tr><td>x if x &lt; 5 else 10 - x</td><td data-i18n="r4">Piecewise definitions</td></tr>
+          <tr><td>pi, e, tau</td><td data-i18n="r5">Constants</td></tr>
+        </table></div>
+      </div>
+      <div class="ref-card">
+        <h3 data-i18n="refFunctions">Functions</h3>
+        <div class="fn-list"><span>sin</span><span>cos</span><span>tan</span><span>asin</span><span>acos</span><span>atan</span><span>atan2</span><span>sinh</span><span>cosh</span><span>tanh</span><span>asinh</span><span>acosh</span><span>atanh</span><span>exp</span><span>log</span><span>log10</span><span>log2</span><span>sqrt</span><span>cbrt</span><span>abs</span><span>sign</span><span>floor</span><span>ceil</span><span>round</span><span>min</span><span>max</span><span>hypot</span><span>pow</span><span>radians</span><span>degrees</span></div>
+        <p class="lead" style="margin-top:12px;font-size:14px" data-i18n="refNote">Angles are in radians. Curve types: y = f(x), x(t), y(t), and x(t), y(t), z(t) (beta), with z along the sketch normal.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap two">
+    <div>
+      <div class="section-head" style="margin-bottom:20px">
+        <p class="eyebrow" data-i18n="newEyebrow">What's new in 26.3.0</p>
+        <h2 data-i18n="newTitle">A single window for the whole workflow.</h2>
+      </div>
+      <ul class="changelog">
+        <li data-i18n="n1">Function list, editor, live graph, placement, and creation in one window.</li>
+        <li data-i18n="n2">Variable sliders with min and max; dashed preview of the selected function.</li>
+        <li data-i18n="n3">Viewport preview on the baseline, with axis arrows.</li>
+        <li data-i18n="n4">Create Curves is one undoable step and all-or-nothing.</li>
+        <li data-i18n="n5">Faster curves without extra sketch points, and no wait for the license check each time.</li>
+        <li data-i18n="n6">Automatic library saving with timestamped backups, export, and import.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="section-head" style="margin-bottom:20px">
+        <p class="eyebrow" data-i18n="licEyebrow">License and privacy</p>
+        <h2 data-i18n="licTitle">Try everything for 30 days.</h2>
+      </div>
+      <dl class="facts">
+        <div><dt data-i18n="l1t">Trial</dt><dd data-i18n="l1d">The 30-day trial has every feature of the paid version.</dd></div>
+        <div><dt data-i18n="l2t">License check</dt><dd data-i18n="l2d">Verified with Autodesk Marketplace in the background when you open the window, without blocking Fusion. A successful check is kept in memory for up to one hour and never written to disk.</dd></div>
+        <div><dt data-i18n="l3t">Privacy</dt><dd data-i18n="l3d">Geometry is processed on your computer. Only your Autodesk user ID and the app ID are sent, directly to Autodesk, to verify the license.</dd></div>
+        <div><dt data-i18n="l4t">Requirements</dt><dd data-i18n="l4d">Autodesk Fusion on Windows. An internet connection is needed for the license check.</dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head" style="margin-bottom:0">
+      <p class="eyebrow" data-i18n="supEyebrow">Support</p>
+      <h2 data-i18n="supTitle">Questions or a curve that will not draw?</h2>
+      <p class="lead" data-i18n="supLead">Send the function and the message shown in Status, and we will look into it.</p>
+    </div>
+    <div class="support">
+      <span class="email" id="email">mekemeke.lab@gmail.com</span>
+      <button type="button" class="copy" id="copyEmail" data-i18n="copy">Copy address</button>
+      <a href="guide.html#en-faq" data-i18n="faqLink">Troubleshooting</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap" data-i18n="footer">© 2026 MEKE MEKE. All rights reserved. Math Curve 2 is an independent add-in. Autodesk and Fusion are registered trademarks or trademarks of Autodesk, Inc.</div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+  // ---- Curves (same formulas as the add-in's presets) ----
+  var TAU = Math.PI * 2;
+  function param(fx, fy, t0, t1) { return { kind: "p", fx: fx, fy: fy, t0: t0, t1: t1 }; }
+  function graph(f, x0, x1) { return { kind: "f", f: f, x0: x0, x1: x1 }; }
+
+  var HERO = [
+    { id: "rose", name: { en: "Rose", ja: "バラ曲線" }, v: "k", min: 1, max: 9, step: 1, value: 4,
+      formula: function (k) { return "x(t) = 3·cos(" + k + "t)·cos(t),   y(t) = 3·cos(" + k + "t)·sin(t)"; },
+      make: function (k) { return param(function (t) { return 3 * Math.cos(k * t) * Math.cos(t); }, function (t) { return 3 * Math.cos(k * t) * Math.sin(t); }, 0, TAU); } },
+    { id: "involute", name: { en: "Involute (gear)", ja: "インボリュート" }, v: "r", min: 0.5, max: 3, step: 0.1, value: 2,
+      formula: function (r) { return "x(t) = " + r + "·(cos t + t·sin t),   y(t) = " + r + "·(sin t − t·cos t)"; },
+      make: function (r) { return param(function (t) { return r * (Math.cos(t) + t * Math.sin(t)); }, function (t) { return r * (Math.sin(t) - t * Math.cos(t)); }, 0, 1.6); } },
+    { id: "damped", name: { en: "Damped wave", ja: "減衰波" }, v: "k", min: 0, max: 0.6, step: 0.02, value: 0.2,
+      formula: function (k) { return "y = 2·exp(−" + k + "x)·sin(2πx/3)"; },
+      make: function (k) { return graph(function (x) { return 2 * Math.exp(-k * x) * Math.sin(TAU * x / 3); }, 0, 10); } },
+    { id: "lissajous", name: { en: "Lissajous", ja: "リサージュ" }, v: "a", min: 1, max: 7, step: 1, value: 3,
+      formula: function (a) { return "x(t) = 3·sin(" + a + "t + π/2),   y(t) = 3·sin(2t)"; },
+      make: function (a) { return param(function (t) { return 3 * Math.sin(a * t + Math.PI / 2); }, function (t) { return 3 * Math.sin(2 * t); }, 0, TAU); } }
+  ];
+
+  var ATLAS = [
+    { name: "Damped Wave", f: "A·exp(−kx)·sin(2πx/L)", c: graph(function (x) { return 2 * Math.exp(-0.2 * x) * Math.sin(TAU * x / 3); }, 0, 10) },
+    { name: "Catenary", f: "a·cosh((x−c)/a) − a", c: graph(function (x) { return 3 * Math.cosh((x - 5) / 3) - 3; }, 0, 10) },
+    { name: "Bell Curve", f: "A·exp(−(x−m)²/2s²)", c: graph(function (x) { return 3 * Math.exp(-Math.pow(x - 5, 2) / 4.5); }, 0, 10) },
+    { name: "Rose Curve", f: "r·cos(kt)·(cos t, sin t)", c: param(function (t) { return 3 * Math.cos(4 * t) * Math.cos(t); }, function (t) { return 3 * Math.cos(4 * t) * Math.sin(t); }, 0, TAU) },
+    { name: "Heart", f: "16 sin³t, 13 cos t − 5 cos 2t …", c: param(function (t) { return 16 * Math.pow(Math.sin(t), 3); }, function (t) { return 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t); }, 0, TAU) },
+    { name: "Astroid", f: "a·cos³t, a·sin³t", c: param(function (t) { return Math.pow(Math.cos(t), 3); }, function (t) { return Math.pow(Math.sin(t), 3); }, 0, TAU) },
+    { name: "Lissajous", f: "A·sin(at + d), B·sin(bt)", c: param(function (t) { return Math.sin(3 * t + 1.5708); }, function (t) { return Math.sin(2 * t); }, 0, TAU) },
+    { name: "Involute (Gear)", f: "r(cos t + t sin t), r(sin t − t cos t)", c: param(function (t) { return Math.cos(t) + t * Math.sin(t); }, function (t) { return Math.sin(t) - t * Math.cos(t); }, 0, 1.6) },
+    { name: "Cycloid", f: "r(t − sin t), r(1 − cos t)", c: param(function (t) { return t - Math.sin(t); }, function (t) { return 1 - Math.cos(t); }, 0, 2 * TAU) },
+    { name: "Hypotrochoid", f: "(R−r)cos t + d·cos((R−r)t/r) …", c: param(function (t) { return 2 * Math.cos(t) + 5 * Math.cos(2 / 3 * t); }, function (t) { return 2 * Math.sin(t) - 5 * Math.sin(2 / 3 * t); }, 0, 3 * TAU) },
+    { name: "Archimedean Spiral", f: "a·t·cos t, a·t·sin t", c: param(function (t) { return t * Math.cos(t); }, function (t) { return t * Math.sin(t); }, 0, 3 * TAU) },
+    { name: "Torus Knot (x-y)", f: "(R + r cos qt)·cos pt …", c: param(function (t) { return (3 + Math.cos(3 * t)) * Math.cos(2 * t); }, function (t) { return (3 + Math.cos(3 * t)) * Math.sin(2 * t); }, 0, TAU) }
+  ];
+
+  function samplePoints(curve, n) {
+    var pts = [];
+    for (var i = 0; i <= n; i++) {
+      if (curve.kind === "p") {
+        var t = curve.t0 + (curve.t1 - curve.t0) * i / n;
+        pts.push([curve.fx(t), curve.fy(t)]);
+      } else {
+        var x = curve.x0 + (curve.x1 - curve.x0) * i / n;
+        pts.push([x, curve.f(x)]);
+      }
+    }
+    return pts;
+  }
+
+  function bounds(pts) {
+    var b = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity };
+    pts.forEach(function (p) { b.x0 = Math.min(b.x0, p[0]); b.x1 = Math.max(b.x1, p[0]); b.y0 = Math.min(b.y0, p[1]); b.y1 = Math.max(b.y1, p[1]); });
+    return b;
+  }
+
+  function niceStep(rough) {
+    var p = Math.pow(10, Math.floor(Math.log10(rough))), f = rough / p;
+    return (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10) * p;
+  }
+
+  // Draw pts into a canvas with equal axes; progress (0..1) reveals the curve along its length.
+  function plot(canvas, pts, color, opts) {
+    var ctx = canvas.getContext("2d");
+    var w = canvas.width, h = canvas.height, pad = opts.pad;
+    var b = opts.bounds || bounds(pts);
+    var spanX = Math.max(b.x1 - b.x0, 1e-6), spanY = Math.max(b.y1 - b.y0, 1e-6);
+    var s = Math.min((w - 2 * pad) / spanX, (h - 2 * pad) / spanY);
+    var cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
+    function X(x) { return w / 2 + (x - cx) * s; }
+    function Y(y) { return h / 2 - (y - cy) * s; }
+
+    ctx.fillStyle = css("--panel");
+    ctx.fillRect(0, 0, w, h);
+    if (opts.grid) {
+      var step = niceStep(70 * (w / canvas.clientWidth || 1) / s);
+      var minor = step / 5;
+      [[minor, css("--grid"), 1], [step, css("--grid-major"), 1]].forEach(function (g) {
+        ctx.strokeStyle = g[1]; ctx.lineWidth = g[2]; ctx.beginPath();
+        for (var x = Math.ceil((cx - w / 2 / s) / g[0]) * g[0]; x <= cx + w / 2 / s; x += g[0]) { ctx.moveTo(X(x), 0); ctx.lineTo(X(x), h); }
+        for (var y = Math.ceil((cy - h / 2 / s) / g[0]) * g[0]; y <= cy + h / 2 / s; y += g[0]) { ctx.moveTo(0, Y(y)); ctx.lineTo(w, Y(y)); }
+        ctx.stroke();
+      });
+      ctx.strokeStyle = css("--muted"); ctx.globalAlpha = 0.6; ctx.lineWidth = 1.5; ctx.beginPath();
+      ctx.moveTo(0, Y(0)); ctx.lineTo(w, Y(0)); ctx.moveTo(X(0), 0); ctx.lineTo(X(0), h); ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    var count = Math.max(2, Math.round(pts.length * (opts.progress == null ? 1 : opts.progress)));
+    ctx.strokeStyle = color; ctx.lineWidth = opts.width; ctx.lineJoin = "round"; ctx.lineCap = "round";
+    ctx.beginPath();
+    for (var i = 0; i < count; i++) {
+      if (i === 0) ctx.moveTo(X(pts[i][0]), Y(pts[i][1])); else ctx.lineTo(X(pts[i][0]), Y(pts[i][1]));
+    }
+    ctx.stroke();
+  }
+
+  // ---- Hero ----
+  var lang = "en";
+  var heroCanvas = document.getElementById("heroCanvas");
+  var slider = document.getElementById("heroSlider");
+  var current = HERO[0];
+  var anim = null;
+
+  function heroBounds(pts) {
+    var b = bounds(pts), padX = (b.x1 - b.x0) * 0.08 + 0.5, padY = (b.y1 - b.y0) * 0.08 + 0.5;
+    return { x0: Math.min(b.x0 - padX, -0.5), x1: b.x1 + padX, y0: Math.min(b.y0 - padY, -0.5), y1: b.y1 + padY };
+  }
+
+  function drawHero(animate) {
+    var value = Number(slider.value);
+    var pts = samplePoints(current.make(value), 900);
+    var b = heroBounds(pts);
+    document.getElementById("heroFormula").textContent = current.formula(value);
+    document.getElementById("heroValue").textContent = current.step < 1 ? value.toFixed(2) : String(value);
+    if (anim) cancelAnimationFrame(anim);
+    if (!animate || reduceMotion) {
+      plot(heroCanvas, pts, css("--blue"), { pad: 30, grid: true, width: 4, bounds: b });
+      return;
+    }
+    var start = null;
+    function frame(now) {
+      if (start === null) start = now;
+      var p = Math.min(1, (now - start) / 900);
+      plot(heroCanvas, pts, css("--blue"), { pad: 30, grid: true, width: 4, bounds: b, progress: 1 - Math.pow(1 - p, 3) });
+      if (p < 1) anim = requestAnimationFrame(frame);
+    }
+    anim = requestAnimationFrame(frame);
+  }
+
+  function selectHero(item, animate) {
+    current = item;
+    slider.min = item.min; slider.max = item.max; slider.step = item.step; slider.value = item.value;
+    document.getElementById("heroVar").textContent = item.v;
+    Array.prototype.forEach.call(document.querySelectorAll("#heroTabs button"), function (btn) {
+      btn.setAttribute("aria-pressed", btn.dataset.id === item.id ? "true" : "false");
+    });
+    drawHero(animate);
+  }
+
+  function renderTabs() {
+    var tabs = document.getElementById("heroTabs");
+    tabs.innerHTML = "";
+    HERO.forEach(function (item) {
+      var btn = document.createElement("button");
+      btn.type = "button"; btn.dataset.id = item.id; btn.textContent = item.name[lang];
+      btn.setAttribute("aria-pressed", item === current ? "true" : "false");
+      btn.addEventListener("click", function () { selectHero(item, true); });
+      tabs.appendChild(btn);
+    });
+  }
+  slider.addEventListener("input", function () { current.value = Number(slider.value); drawHero(false); });
+
+  // ---- Atlas ----
+  function renderAtlas() {
+    var atlas = document.getElementById("atlas");
+    atlas.innerHTML = "";
+    var colors = ["--blue", "--orange", "--green", "--violet", "--teal", "--red"];
+    ATLAS.forEach(function (item, i) {
+      var fig = document.createElement("figure");
+      var canvas = document.createElement("canvas");
+      canvas.width = 320; canvas.height = 320;
+      canvas.setAttribute("role", "img"); canvas.setAttribute("aria-label", item.name);
+      var cap = document.createElement("figcaption");
+      cap.textContent = item.name;
+      var formula = document.createElement("span");
+      formula.className = "mono"; formula.textContent = item.f; formula.title = item.f;
+      cap.appendChild(formula);
+      fig.appendChild(canvas); fig.appendChild(cap); atlas.appendChild(fig);
+      plot(canvas, samplePoints(item.c, 700), css(colors[i % colors.length]), { pad: 26, grid: false, width: 5 });
+    });
+  }
+
+  // ---- Language ----
+  var JA = {
+    eyebrow: "Autodesk Fusion 用アドイン · バージョン 26.3.0",
+    title: "関数を、<span>そのままスケッチへ。</span>",
+    lead: "y = f(x) や媒介変数の式を入力し、グラフで変数を調整して、好きなスケッチ線に配置。歯車のインボリュート、サイクロイド、螺旋、減衰波も、式どおりの形を一度に作成できます。",
+    chip1: "30日間の無料体験",
+    ctaStore: "Autodesk App Store で入手",
+    ctaGuide: "ユーザーガイドを読む",
+    navGuide: "ユーザーガイド",
+    howEyebrow: "1つのウィンドウ",
+    howTitle: "定義して、調整して、配置する。すべて Math Curve ウィンドウで。",
+    shotCaption: "4つの関数を 50 mm のスケッチ線に配置した Math Curve ウィンドウ。",
+    s1t: "関数を定義する",
+    s1p: "y = f(x)、x(t), y(t)、3D 曲線を追加するか、プリセットから始めます。式の誤りはわかりやすい言葉で示され、未定義の名前はワンクリックで変数にできます。",
+    s2t: "グラフで調整する",
+    s2p: "最小値・最大値を決めた変数スライダーを動かすと、グラフがその場で変わります。tan(x) のような不連続点は、つながずに分割します。",
+    s3t: "配置して作成する",
+    s3p: "スケッチ線かスケッチの原点を選ぶと、ビューポートにプレビューが表示されます。Create Curves で作成し、元に戻すも1回で済みます。",
+    featEyebrow: "機能",
+    featTitle: "正確な形状のために。大きなスケッチでも軽快に。",
+    f1t: "軽い曲線",
+    f1p: "各曲線は、すべての計算点を通る1本の滑らかなスプラインです。余分なスケッチ点を作らないので、後の編集も軽いままです。",
+    f2t: "影響のないプレビュー",
+    f2p: "基準線上のプレビューは表示専用です。スケッチ、タイムライン、プロファイルを変更しません。",
+    f3t: "実際の単位",
+    f3p: "mm、cm、m、in、ft で入力できます。Fusion のユーザーパラメーターも、式の中で名前のまま使えます。",
+    f4t: "安全な作成",
+    f4p: "重すぎる計算は Fusion が遅くなる前に止めます。1本でも作れない曲線があれば何も作成せず、理由を表示します。",
+    f5t: "向きの調整",
+    f5p: "関数ごとに From end、Flip X、Flip Y を切り替えられます。基準線には +x（赤）と +y（緑）の矢印が表示されます。",
+    f6t: "ライブラリを自動保存",
+    f6p: "関数はお使いのコンピューターに自動で保存され、JSON ファイルとして書き出し・読み込みもできます。",
+    atlasEyebrow: "プリセット",
+    atlasTitle: "定番の曲線から始める。",
+    atlasLead: "21種類のプリセットを同梱しています。下の図は、同じ式からこのページで描いています。",
+    refEyebrow: "式の書き方",
+    refTitle: "紙に書くように式を書く。",
+    refSyntax: "書き方",
+    r1: "べき乗",
+    r2: "a や L などの変数にはスライダーが付きます",
+    r3: "Fusion のユーザーパラメーターを名前で使用",
+    r4: "場合分け",
+    r5: "定数",
+    refFunctions: "使える関数",
+    refNote: "角度はラジアンです。曲線の種類: y = f(x)、x(t), y(t)、x(t), y(t), z(t)（β版、z はスケッチ面の法線方向）。",
+    newEyebrow: "26.3.0 の新機能",
+    newTitle: "作業のすべてを、1つのウィンドウに。",
+    n1: "関数一覧、編集、グラフ、配置、作成を1つのウィンドウに統合。",
+    n2: "最小値・最大値付きの変数スライダー。選択中の関数を点線でプレビュー。",
+    n3: "基準線上のビューポートプレビューと座標軸の矢印。",
+    n4: "Create Curves は1回の操作で元に戻せ、すべて作成できるときだけ作成。",
+    n5: "余分なスケッチ点のない軽い曲線。ライセンス確認で毎回待たされません。",
+    n6: "ライブラリの自動保存（日時付きバックアップ）、書き出しと読み込み。",
+    licEyebrow: "ライセンスとプライバシー",
+    licTitle: "30日間、すべての機能を試せます。",
+    l1t: "体験版",
+    l1d: "30日間の体験版は、製品版と同じすべての機能を使えます。",
+    l2t: "ライセンスの確認",
+    l2d: "ウィンドウを開いたときに、Fusion を止めずに裏で Autodesk Marketplace に確認します。確認できた結果はメモリ上に最大1時間だけ保持し、ディスクには保存しません。",
+    l3t: "プライバシー",
+    l3d: "形状の計算はお使いのコンピューターで行います。ライセンス確認のために、Autodesk のユーザー ID とアプリ ID だけを Autodesk に直接送信します。",
+    l4t: "動作環境",
+    l4d: "Windows 版 Autodesk Fusion。ライセンス確認にはインターネット接続が必要です。",
+    supEyebrow: "サポート",
+    supTitle: "ご質問や、描けない曲線がありましたら。",
+    supLead: "関数と、Status に表示されたメッセージをお送りください。確認してご連絡します。",
+    copy: "アドレスをコピー",
+    faqLink: "困ったときは",
+    footer: "© 2026 MEKE MEKE. All rights reserved. Math Curve 2 は独立したアドインです。Autodesk および Fusion は、Autodesk, Inc. の登録商標または商標です。"
+  };
+  var EN = {};
+  Array.prototype.forEach.call(document.querySelectorAll("[data-i18n]"), function (node) { EN[node.dataset.i18n] = node.textContent; });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-i18n-html]"), function (node) { EN[node.dataset.i18nHtml] = node.innerHTML; });
+
+  function setLang(next) {
+    lang = next;
+    var dict = next === "ja" ? JA : EN;
+    document.documentElement.lang = next;
+    Array.prototype.forEach.call(document.querySelectorAll("[data-i18n]"), function (node) {
+      if (dict[node.dataset.i18n]) node.textContent = dict[node.dataset.i18n];
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-i18n-html]"), function (node) {
+      if (dict[node.dataset.i18nHtml]) node.innerHTML = dict[node.dataset.i18nHtml];
+    });
+    document.getElementById("langEn").setAttribute("aria-pressed", next === "en" ? "true" : "false");
+    document.getElementById("langJa").setAttribute("aria-pressed", next === "ja" ? "true" : "false");
+    renderTabs();
+    try { localStorage.setItem("mathCurveLang", next); } catch (e) { /* language is remembered only when storage works */ }
+  }
+  document.getElementById("langEn").addEventListener("click", function () { setLang("en"); });
+  document.getElementById("langJa").addEventListener("click", function () { setLang("ja"); });
+
+  document.getElementById("copyEmail").addEventListener("click", function () {
+    var button = this;
+    var address = document.getElementById("email").textContent;
+    function selectText() {
+      var range = document.createRange();
+      range.selectNodeContents(document.getElementById("email"));
+      var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+    }
+    try {
+      navigator.clipboard.writeText(address).then(function () {
+        button.textContent = lang === "ja" ? "コピーしました" : "Copied";
+      }, selectText);
+    } catch (e) { selectText(); }
+  });
+
+  // Redraw canvases when the theme changes (colors come from CSS tokens).
+  function redrawAll() { drawHero(false); renderAtlas(); }
+  if (window.matchMedia) {
+    var scheme = window.matchMedia("(prefers-color-scheme: dark)");
+    if (scheme.addEventListener) scheme.addEventListener("change", redrawAll);
+  }
+  new MutationObserver(redrawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+  var saved = "en";
+  try { saved = localStorage.getItem("mathCurveLang") || (navigator.language || "").slice(0, 2) || "en"; } catch (e) { saved = "en"; }
+  setLang(saved === "ja" ? "ja" : "en");
+  selectHero(HERO[0], true);
+  renderAtlas();
+})();
+</script>
+</body>
+</html>
